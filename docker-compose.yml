@@ -28,7 +28,6 @@ services:
     command: >
       bash -c "
         until pg_isready -h db -U user -d app; do sleep 1; done;
-        echo '✅ DB ready. Running init scripts...';
         for f in /init/*.sql; do
           psql -h db -U user -d app -f \"$$f\";
         done;
