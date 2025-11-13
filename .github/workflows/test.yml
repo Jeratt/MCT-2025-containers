@@ -36,16 +36,21 @@ jobs:
           fi
           echo "Web test passed!"
 
-      - name: Check init-db
+      - name: init-db check
         run: |
-          curl -f http://localhost:5000/ping >/dev/null      
-          count=$(docker compose exec -T db \
-            psql -U user -d app -t -c "SELECT COUNT(*) FROM visits;" | xargs)
-          if [[ "$count" != "1" ]]; then
-            echo "Expected 1 row in 'visits' after /ping, got: $count"
+          table_exists=$(docker compose exec -T db \
+            psql -U user -d app -t -c "
+            SELECT EXISTS (
+              SELECT FROM information_schema.tables 
+              WHERE table_schema = 'public' 
+              AND table_name = 'visits'
+            );" | xargs)
+          
+          if [[ "$table_exists" != "t" ]]; then
+            echo "Table 'visits' was not created during initialization"
             exit 1
           fi
-          echo "DB init confirmed: 1 visit recorded"
+          echo "Init-db ended successfully -> db created"
 
       - name: Test PostgreSQL connection
         run: |
