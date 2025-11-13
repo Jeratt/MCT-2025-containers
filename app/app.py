@@ -2,7 +2,7 @@ import os
 import time
 import psycopg2
 import logging
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
@@ -29,6 +29,10 @@ def connect_db(max_retries=3, delay=1):
             else:
                 logger.error("DB connection failed -> max retries reached :(")
                 raise
+
+@app.route("/")
+def index():
+    return jsonify({"status": "ok"})
 
 @app.route('/ping')
 def ping():
