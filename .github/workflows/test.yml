@@ -38,13 +38,18 @@ jobs:
 
       - name: Check init-db completed successfully
         run: |
-          exit_code=$(docker inspect init-db --format='{{.State.ExitCode}}')
+          init_id=$(docker compose ps -q init-db)
+          if [[ -z "$init_id" ]]; then
+            echo "init-db container not found!"
+            exit 1
+          fi
+          exit_code=$(docker inspect "$init_id" --format='{{.State.ExitCode}}')
           if [[ "$exit_code" != "0" ]]; then
-            echo "init-db failed with exit code: $exit_code"
+            echo "init-db failed (exit code: $exit_code)"
             docker compose logs init-db
             exit 1
           fi
-          echo "init-db completed successfully!"
+          echo "init-db succeeded!"
 
       - name: Test PostgreSQL connection
         run: |
